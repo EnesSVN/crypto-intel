@@ -1,6 +1,7 @@
 "use client";
 
 import { MarketCoin } from "@/lib/coingecko";
+import Link from "next/link";
 
 function formatCurrency(n: number, currency = "USD") {
   return new Intl.NumberFormat(currency === "TRY" ? "tr-TR" : "en-US", {
@@ -46,14 +47,18 @@ export default function CoinsTable({
               <td className="px-4 py-3">{c.market_cap_rank}</td>
               <td className="px-4 py-3">
                 <div className="flex items-center gap-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={c.image}
                     alt={c.name}
                     className="h-6 w-6 rounded-full"
                   />
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">{c.name}</span>
+                    <Link
+                      href={`/coins/${c.id}`}
+                      className="font-medium underline-offset-2 hover:underline"
+                    >
+                      {c.name}
+                    </Link>
                     <span className="uppercase text-neutral-500">
                       {c.symbol}
                     </span>
