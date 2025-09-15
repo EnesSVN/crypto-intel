@@ -70,3 +70,15 @@ export async function getMarketChart(params: {
   const json = await res.json();
   return (json.prices as [number, number][]).map(([t, p]) => ({ t, price: p }));
 }
+
+export async function getSimplePrices(ids: string[], vs: "usd" | "try") {
+  if (!ids.length) return {};
+  const PAGE_BASE = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "") ?? "";
+  const url = `${PAGE_BASE}/api/cg/simple/price?ids=${encodeURIComponent(
+    ids.join(",")
+  )}&vs=${vs}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok)
+    throw new Error(`Simple price error: ${res.status} ${res.statusText}`);
+  return res.json() as Promise<Record<string, Record<string, number>>>;
+}

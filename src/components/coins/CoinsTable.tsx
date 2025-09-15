@@ -1,9 +1,10 @@
 "use client";
 
-import { MarketCoin } from "@/lib/coingecko";
+import { getCoinDetail, MarketCoin } from "@/lib/coingecko";
 import { useAppStore } from "@/store/app";
 import Link from "next/link";
 import { Star } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 function formatCurrency(n: number, currency = "USD") {
   return new Intl.NumberFormat(currency === "TRY" ? "tr-TR" : "en-US", {
@@ -37,6 +38,25 @@ function WatchButton({ id }: { id: string }) {
     >
       <Star className={`h-4 w-4 ${inWatch ? "fill-current" : ""}`} />
     </button>
+  );
+}
+
+function PrefetchingLink({ id, name }: { id: string; name: string }) {
+  const qc = useQueryClient();
+  return (
+    <Link
+      href={`/coins/${id}`}
+      onMouseEnter={() => {
+        qc.prefetchQuery({
+          queryKey: ["coin", id],
+          queryFn: () => getCoinDetail(id),
+          staleTime: 60_000,
+        });
+      }}
+      className="font-medium underline-offset-2 hover:underline"
+    >
+      {name}
+    </Link>
   );
 }
 
@@ -79,12 +99,7 @@ export default function CoinsTable({
                     className="h-6 w-6 rounded-full"
                   />
                   <div className="flex items-center gap-2">
-                    <Link
-                      href={`/coins/${c.id}`}
-                      className="font-medium underline-offset-2 hover:underline"
-                    >
-                      {c.name}
-                    </Link>
+                    <PrefetchingLink id={c.id} name={c.name} />
                     <span className="uppercase text-neutral-500">
                       {c.symbol}
                     </span>
