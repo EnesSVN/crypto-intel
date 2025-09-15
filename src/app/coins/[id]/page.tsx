@@ -6,6 +6,8 @@ import { useState, useMemo } from "react";
 import { useCoinDetail } from "@/hooks/useCoinDetail";
 import { useCoinChart } from "@/hooks/useCoinChart";
 import CoinChart from "../CoinChart";
+import { mapToBinanceSymbol } from "@/lib/binance";
+import { useBinanceTicker } from "@/hooks/useBinanceTicker";
 
 function formatCurrency(n: number | undefined, currency: "USD" | "TRY") {
   if (n == null) return "-";
@@ -21,8 +23,16 @@ export default function CoinDetailPage() {
   const id = params.id;
   const [currency] = useState<"USD" | "TRY">("USD");
   const [days, setDays] = useState<number>(30);
-
   const { data: coin, isLoading, isError, error } = useCoinDetail(id);
+
+  const binanceSymbol = coin ? mapToBinanceSymbol(id, coin.symbol) : null;
+  const live = useBinanceTicker(binanceSymbol);
+
+  const displayPrice =
+    live?.last != null
+      ? live.last
+      : coin?.market_data?.current_price?.[currency.toLowerCase()];
+
   const {
     data: chart,
     isLoading: isChartLoading,
@@ -64,6 +74,31 @@ export default function CoinDetailPage() {
         </Link>
       </div>
 
+      <section className="mb-6 flex flex-wrap items-baseline gap-4">
+        <div className="text-2xl font-semibold">
+          {formatCurrency(displayPrice, currency)}
+        </div>
+        <div className={`text-sm ${pctClass}`}>
+          {pct24 != null ? `${pct24.toFixed(2)}% (24h)` : "-"}
+        </div>
+
+        {binanceSymbol ? (
+          <span
+            className={`rounded-full px-2 py-0.5 text-xs border ${
+              live.connected
+                ? "border-emerald-400 text-emerald-500"
+                : "border-neutral-400 text-neutral-500"
+            }`}
+          >
+            {live.connected ? "LIVE • Binance" : "WS bağlanıyor…"}
+          </span>
+        ) : (
+          <span className="rounded-full px-2 py-0.5 text-xs border border-neutral-400 text-neutral-500">
+            WS yok (eşleşme bulunamadı)
+          </span>
+        )}
+      </section>
+
       {isLoading && (
         <div className="space-y-3">
           <div className="h-10 w-64 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
@@ -93,19 +128,7 @@ export default function CoinDetailPage() {
             </h1>
           </header>
 
-          <section className="mb-6 flex flex-wrap items-baseline gap-4">
-            <div className="text-2xl font-semibold">
-              {formatCurrency(
-                coin.market_data?.current_price?.[currency.toLowerCase()],
-                currency
-              )}
-            </div>
-            <div className={`text-sm ${pctClass}`}>
-              {pct24 != null ? `${pct24.toFixed(2)}% (24h)` : "-"}
-            </div>
-          </section>
-
-          <section className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4">
               <div className="text-xs text-neutral-500">Market Cap</div>
               <div className="text-sm">
@@ -124,7 +147,7 @@ export default function CoinDetailPage() {
                 )}
               </div>
             </div>
-          </section>
+          </div>
 
           <div className="mb-3 flex flex-wrap items-center gap-2">
             {rangeOptions.map((r) => (
