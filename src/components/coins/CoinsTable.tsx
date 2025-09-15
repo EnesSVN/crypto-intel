@@ -1,7 +1,9 @@
 "use client";
 
 import { MarketCoin } from "@/lib/coingecko";
+import { useAppStore } from "@/store/app";
 import Link from "next/link";
+import { Star } from "lucide-react";
 
 function formatCurrency(n: number, currency = "USD") {
   return new Intl.NumberFormat(currency === "TRY" ? "tr-TR" : "en-US", {
@@ -18,6 +20,26 @@ function pctColor(p: number | null | undefined) {
   return "";
 }
 
+function WatchButton({ id }: { id: string }) {
+  const inWatch = useAppStore((s) => s.inWatch(id));
+  const toggle = useAppStore((s) => s.toggleWatch);
+
+  return (
+    <button
+      onClick={() => toggle(id)}
+      title={inWatch ? "İzlemeyi kaldır" : "İzlemeye al"}
+      className={`inline-flex items-center justify-center rounded-md border px-2 py-1 text-xs
+        ${
+          inWatch
+            ? "border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-500"
+            : "border-neutral-300 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
+        }`}
+    >
+      <Star className={`h-4 w-4 ${inWatch ? "fill-current" : ""}`} />
+    </button>
+  );
+}
+
 export default function CoinsTable({
   data,
   currency = "USD",
@@ -31,6 +53,7 @@ export default function CoinsTable({
         <thead className="bg-neutral-50 dark:bg-neutral-900">
           <tr className="text-left">
             <th className="px-4 py-3 w-16">#</th>
+            <th className="px-4 py-3 w-16 text-center">Watch</th>
             <th className="px-4 py-3">Coin</th>
             <th className="px-4 py-3">Price</th>
             <th className="px-4 py-3">24h %</th>
@@ -44,6 +67,9 @@ export default function CoinsTable({
               key={c.id}
               className="border-t border-neutral-100 dark:border-neutral-800"
             >
+              <td className="px-4 py-3 text-center">
+                <WatchButton id={c.id} />
+              </td>
               <td className="px-4 py-3">{c.market_cap_rank}</td>
               <td className="px-4 py-3">
                 <div className="flex items-center gap-3">
