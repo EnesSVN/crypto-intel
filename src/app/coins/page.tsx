@@ -3,13 +3,16 @@
 import { useState } from "react";
 import CoinsTable from "@/components/coins/CoinsTable";
 import { useMarketsQuery } from "@/hooks/useMarketsQuery";
+import { useAppStore } from "@/store/app";
 
 const PER_PAGE = 25;
 
 export default function CoinsPage() {
   const [page, setPage] = useState(1);
+  const currency = useAppStore((s) => s.currency);
+  const vs = currency.toLowerCase() as "usd" | "try";
   const { data, isLoading, isError, error, isFetching } = useMarketsQuery({
-    vs: "usd",
+    vs: vs,
     page,
     perPage: PER_PAGE,
   });
@@ -66,7 +69,7 @@ export default function CoinsPage() {
         </div>
       )}
 
-      {data && <CoinsTable data={data} currency="USD" />}
+      {data && <CoinsTable data={data} currency={currency} />}
     </main>
   );
 }
