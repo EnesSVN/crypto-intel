@@ -1,4 +1,4 @@
-const API_BASE = "https://api.coingecko.com/api/v3";
+const PAGE_BASE = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "") ?? "";
 
 export type MarketCoin = {
   id: string;
@@ -25,8 +25,10 @@ export type CoinDetail = {
   };
 };
 
+export type ChartPoint = { t: number; price: number };
+
 type MarketsParams = {
-  vs?: string;
+  vs?: "usd" | "try";
   page?: number;
   perPage?: number;
   order?: string;
@@ -38,37 +40,33 @@ export async function getMarkets({
   perPage = 25,
   order = "market_cap_desc",
 }: MarketsParams): Promise<MarketCoin[]> {
-  const url = `${API_BASE}/coins/markets?vs_currency=${vs}&order=${order}&per_page=${perPage}&page=${page}&price_change_percentage=24h`;
-  const res = await fetch(url, {
-    cache: "no-store",
-    headers: { "x-cg-demo": "crypto-intel" },
-  });
-  if (!res.ok) {
-    throw new Error(`CoinGecko error: ${res.status} ${res.statusText}`);
-  }
+  const url = `${PAGE_BASE}/api/cg/markets?vs=${vs}&page=${page}&perPage=${perPage}&order=${encodeURIComponent(
+    order
+  )}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok)
+    throw new Error(`Markets error: ${res.status} ${res.statusText}`);
   return res.json();
 }
 
 export async function getCoinDetail(id: string): Promise<CoinDetail> {
-  const url = `${API_BASE}/coins/${id}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`;
+  const url = `${PAGE_BASE}/api/cg/coin/${encodeURIComponent(id)}`;
   const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok)
-    throw new Error(`CoinGecko error: ${res.status} ${res.statusText}`);
+  if (!res.ok) throw new Error(`Detail error: ${res.status} ${res.statusText}`);
   return res.json();
 }
 
-export type ChartPoint = { t: number; price: number };
-
 export async function getMarketChart(params: {
   id: string;
-  vs?: string;
+  vs?: "usd" | "try";
   days?: number;
 }): Promise<ChartPoint[]> {
   const { id, vs = "usd", days = 30 } = params;
-  const url = `${API_BASE}/coins/${id}/market_chart?vs_currency=${vs}&days=${days}&precision=2`;
+  const url = `${PAGE_BASE}/api/cg/coin/${encodeURIComponent(
+    id
+  )}/chart?vs=${vs}&days=${days}`;
   const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok)
-    throw new Error(`CoinGecko error: ${res.status} ${res.statusText}`);
+  if (!res.ok) throw new Error(`Chart error: ${res.status} ${res.statusText}`);
   const json = await res.json();
   return (json.prices as [number, number][]).map(([t, p]) => ({ t, price: p }));
 }
