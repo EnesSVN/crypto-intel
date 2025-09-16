@@ -69,6 +69,7 @@ export default function PortfolioPage() {
           className="rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm outline-none dark:border-neutral-700"
         />
         <button
+          aria-label="Add to portfolio"
           type="submit"
           className="rounded-lg border border-neutral-300 px-3 py-2 text-sm hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
         >
@@ -161,6 +162,7 @@ function PortfolioRow({
       </td>
       <td className="px-4 py-3">
         <button
+          aria-label="Remove from portfolio"
           onClick={onRemove}
           className="rounded-lg border border-neutral-300 px-3 py-1 text-xs hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
         >
@@ -245,6 +247,7 @@ function WatchlistRow({
           id={`cost-${id}`}
         />
         <button
+          aria-label="Add to portfolio"
           disabled={alreadyInPortfolio || amount <= 0 || !current}
           onClick={() => {
             const input = document.getElementById(

@@ -27,6 +27,7 @@ function WatchButton({ id }: { id: string }) {
 
   return (
     <button
+      aria-label={inWatch ? "İzlemeyi kaldır" : "İzlemeye al"}
       onClick={() => toggle(id)}
       title={inWatch ? "İzlemeyi kaldır" : "İzlemeye al"}
       className={`inline-flex items-center justify-center rounded-md border px-2 py-1 text-xs

@@ -112,6 +112,7 @@ export default function AlertsPage() {
           className="rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm outline-none dark:border-neutral-700"
         />
         <button
+          aria-label="Add alert"
           type="submit"
           className="rounded-lg border border-neutral-300 px-3 py-2 text-sm hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
         >
@@ -181,12 +182,14 @@ export default function AlertsPage() {
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
                         <button
+                          aria-label={a.active ? "Durdur" : "Aktifleştir"}
                           onClick={() => toggleAlert(a.id, a.op, a.price)}
                           className="rounded-lg border border-neutral-300 px-3 py-1 text-xs hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
                         >
                           {a.active ? "Durdur" : "Aktifleştir"}
                         </button>
                         <button
+                          aria-label="Sil"
                           onClick={() => removeAlert(a.id, a.op, a.price)}
                           className="rounded-lg border border-neutral-300 px-3 py-1 text-xs hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
                         >

@@ -5,10 +5,17 @@ import { useParams } from "next/navigation";
 import { useState, useMemo } from "react";
 import { useCoinDetail } from "@/hooks/useCoinDetail";
 import { useCoinChart } from "@/hooks/useCoinChart";
-import CoinChart from "../CoinChart";
 import { mapToBinanceSymbol } from "@/lib/binance";
 import { useBinanceTicker } from "@/hooks/useBinanceTicker";
 import { useNotes } from "@/hooks/useNotes";
+import dynamic from "next/dynamic";
+
+const CoinChart = dynamic(() => import("../CoinChart"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[360px] w-full rounded-2xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
+  ),
+});
 
 function formatCurrency(n: number | undefined, currency: "USD" | "TRY") {
   if (n == null) return "-";
@@ -161,6 +168,7 @@ export default function CoinDetailPage() {
           <div className="mb-3 flex flex-wrap items-center gap-2">
             {rangeOptions.map((r) => (
               <button
+                aria-label={`Show ${r.label} chart`}
                 key={r.d}
                 onClick={() => setDays(r.d)}
                 className={`rounded-lg border px-3 py-1.5 text-sm ${
@@ -212,6 +220,7 @@ export default function CoinDetailPage() {
             className="flex-1 rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm outline-none dark:border-neutral-700"
           />
           <button
+            aria-label="Add note"
             type="submit"
             disabled={creating || !noteText.trim()}
             className="rounded-lg border border-neutral-300 px-3 py-2 text-sm disabled:opacity-60 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
