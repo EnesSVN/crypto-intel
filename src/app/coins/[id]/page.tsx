@@ -8,6 +8,7 @@ import { useCoinChart } from "@/hooks/useCoinChart";
 import CoinChart from "../CoinChart";
 import { mapToBinanceSymbol } from "@/lib/binance";
 import { useBinanceTicker } from "@/hooks/useBinanceTicker";
+import { useNotes } from "@/hooks/useNotes";
 
 function formatCurrency(n: number | undefined, currency: "USD" | "TRY") {
   if (n == null) return "-";
@@ -24,6 +25,14 @@ export default function CoinDetailPage() {
   const [currency] = useState<"USD" | "TRY">("USD");
   const [days, setDays] = useState<number>(30);
   const { data: coin, isLoading, isError, error } = useCoinDetail(id);
+  const {
+    data: notes,
+    isLoading: notesLoading,
+    createNote,
+    creating,
+    createError,
+  } = useNotes(id);
+  const [noteText, setNoteText] = useState("");
 
   const binanceSymbol = coin ? mapToBinanceSymbol(id, coin.symbol) : null;
   const live = useBinanceTicker(binanceSymbol);
@@ -181,6 +190,71 @@ export default function CoinDetailPage() {
           {chart && <CoinChart data={chart} currency={currency} days={days} />}
         </>
       )}
+
+      <section className="mt-8">
+        <h2 className="text-lg font-semibold mb-3">Notlar</h2>
+
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const t = noteText.trim();
+            if (!t) return;
+            await createNote({ text: t });
+            setNoteText("");
+          }}
+          className="mb-4 flex gap-2"
+        >
+          <input
+            value={noteText}
+            onChange={(e) => setNoteText(e.target.value)}
+            placeholder="Bu coine dair kısa notun…"
+            maxLength={500}
+            className="flex-1 rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm outline-none dark:border-neutral-700"
+          />
+          <button
+            type="submit"
+            disabled={creating || !noteText.trim()}
+            className="rounded-lg border border-neutral-300 px-3 py-2 text-sm disabled:opacity-60 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
+          >
+            {creating ? "Kaydediliyor…" : "Ekle"}
+          </button>
+        </form>
+
+        {createError && (
+          <div className="mb-3 text-xs text-red-600 dark:text-red-400">
+            Not kaydı başarısız oldu (örnek hata simülasyonu). Değişiklik geri
+            alındı.
+          </div>
+        )}
+
+        {notesLoading ? (
+          <div className="space-y-2">
+            <div className="h-10 w-full animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800" />
+            <div className="h-10 w-3/4 animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800" />
+          </div>
+        ) : notes && notes.length > 0 ? (
+          <ul className="space-y-2">
+            {notes.map((n) => (
+              <li
+                key={n.id}
+                className="rounded-xl border border-neutral-200 p-3 text-sm dark:border-neutral-800"
+              >
+                <div className="text-neutral-800 dark:text-neutral-100">
+                  {n.text}
+                </div>
+                <div className="mt-1 text-[10px] text-neutral-500">
+                  {new Date(n.createdAt).toLocaleString()}
+                  {String(n.id).startsWith("temp-") && " • (taslak)"}
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="text-sm text-neutral-600 dark:text-neutral-300">
+            Henüz not yok. İlk notu ekleyebilirsin.
+          </div>
+        )}
+      </section>
     </main>
   );
 }
